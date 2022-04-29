@@ -302,6 +302,12 @@ class AccessTokenTest(BaseOAuth2TestCase):
         self.assertEqual('invalid_grant', json.loads(response.content)['error'])
 
     def test_escalating_the_scope(self):
+        """
+        This test is expected to fail since we default grant to read+write scope, and this test expects
+        default grant to be read.
+
+        See OVERRIDE comment in: provider.oauth2.forms.ScopeMixin.clean_scope
+        """
         self.login()
         self._login_and_authorize()
         code = self.get_grant().code
@@ -340,6 +346,7 @@ class AccessTokenTest(BaseOAuth2TestCase):
             response.content)
 
     def test_password_grant(self):
+        # Test happy path.
         response = self.client.post(self.access_token_url(), {
             'grant_type': 'password',
             'client_id': self.get_client().client_id,
@@ -350,6 +357,7 @@ class AccessTokenTest(BaseOAuth2TestCase):
 
         self.assertEqual(200, response.status_code, response.content)
 
+        # Test invalid password.
         response = self.client.post(self.access_token_url(), {
             'grant_type': 'password',
             'client_id': self.get_client().client_id,
@@ -360,6 +368,19 @@ class AccessTokenTest(BaseOAuth2TestCase):
 
         self.assertEqual(400, response.status_code, response.content)
         self.assertEqual('invalid_grant', json.loads(response.content)['error'])
+
+        # Test missing client
+        Client.objects.filter(pk=2).update(name="")
+        response = self.client.post(self.access_token_url(), {
+            'grant_type': 'password',
+            'client_id': self.get_client().client_id,
+            'client_secret': self.get_client().client_secret,
+            'username': self.get_user().username,
+            'password': self.get_password(),
+        })
+
+        self.assertEqual(400, response.status_code, response.content)
+        self.assertEqual('invalid_client', json.loads(response.content)['error'])
 
 
 class AuthBackendTest(BaseOAuth2TestCase):
