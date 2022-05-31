@@ -33,7 +33,8 @@ def create_access_and_refresh_token(client, user, scope=None):
 
 
 def expire_user_access_tokens(user):
-    """Expire all active tokens associated with a user"""
+    """Expire all active tokens and refresh tokens associated with a user"""
     current_ts = now()
     expire_ts = current_ts - timedelta(minutes=1)
     AccessToken.objects.filter(user=user, expires__gte=current_ts).update(expires=expire_ts)
+    RefreshToken.objects.filter(user=user, expired=False).update(expired=True)
