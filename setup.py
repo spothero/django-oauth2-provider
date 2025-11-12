@@ -6,6 +6,7 @@ import provider
 setup(
     name='django-oauth2-provider',
     version=provider.__version__,
+    python_requires=">=3.2",
     description='Provide OAuth2 access to your app',
     long_description=open('README.rst').read(),
     author='Alen Mujezinovic',

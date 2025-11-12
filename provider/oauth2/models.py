@@ -5,6 +5,7 @@ views in :attr:`provider.views`.
 """
 from __future__ import absolute_import
 
+from datetime import timezone
 from django.db import models
 from django.conf import settings
 from .. import constants
@@ -13,11 +14,6 @@ from ..utils import short_token, long_token, get_token_expiry
 from ..utils import get_code_expiry
 from ..utils import now
 from .managers import AccessTokenManager
-
-try:
-    from django.utils import timezone
-except ImportError:
-    timezone = None
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
