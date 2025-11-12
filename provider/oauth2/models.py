@@ -5,7 +5,7 @@ views in :attr:`provider.views`.
 """
 from __future__ import absolute_import
 
-from datetime import UTC
+from datetime import timezone
 from django.db import models
 from django.conf import settings
 from .. import constants
@@ -14,11 +14,6 @@ from ..utils import short_token, long_token, get_token_expiry
 from ..utils import get_code_expiry
 from ..utils import now
 from .managers import AccessTokenManager
-
-try:
-    from django.utils import timezone
-except ImportError:
-    timezone = None
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
@@ -135,16 +130,16 @@ class AccessToken(models.Model):
             if timezone.is_aware(reference) and timezone.is_naive(expiration):
                 # MySQL doesn't support timezone for datetime fields
                 # so we assume that the date was stored in the UTC timezone
-                expiration = timezone.make_aware(expiration, UTC)
+                expiration = timezone.make_aware(expiration, timezone.utc)
             elif timezone.is_naive(reference) and timezone.is_aware(expiration):
-                reference = timezone.make_aware(reference, UTC)
+                reference = timezone.make_aware(reference, timezone.utc)
 
         timedelta = expiration - reference
         return timedelta.days*86400 + timedelta.seconds
 
     @property
     def expires_text(self):
-        return self.expires.astimezone(UTC).strftime('%Y-%m-%dT%H:%M:%SZ')
+        return self.expires.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 class RefreshToken(models.Model):
